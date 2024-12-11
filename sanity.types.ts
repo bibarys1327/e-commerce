@@ -269,6 +269,88 @@ export type PRODUCTS_QUERYResult = Array<{
   label?: string;
   status?: "hot" | "new" | "sale";
 }>;
+// Variable: CATEGORIES_QUERY
+// Query: *[_type == 'category'] | order(name asc)
+export type CATEGORIES_QUERYResult = Array<{
+  _id: string;
+  _type: "category";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  title?: string;
+  slug?: Slug;
+  description?: string;
+}>;
+// Variable: PRODUCT_BY_SLUG
+// Query: *[_type == 'product' && slug.current == $slug] | order(name asc)[0]
+export type PRODUCT_BY_SLUGResult = {
+  _id: string;
+  _type: "product";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  name?: string;
+  slug?: Slug;
+  image?: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  description?: string;
+  price?: number;
+  discount?: number;
+  categories?: Array<{
+    _ref: string;
+    _type: "reference";
+    _weak?: boolean;
+    _key: string;
+    [internalGroqTypeReferenceTo]?: "category";
+  }>;
+  stock?: number;
+  label?: string;
+  status?: "hot" | "new" | "sale";
+} | null;
+// Variable: PRODUCT_SEARCH_QUERY
+// Query: *[_type == 'product' && name match $searchParams] | order(name asc)
+export type PRODUCT_SEARCH_QUERYResult = Array<{
+  _id: string;
+  _type: "product";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  name?: string;
+  slug?: Slug;
+  image?: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  description?: string;
+  price?: number;
+  discount?: number;
+  categories?: Array<{
+    _ref: string;
+    _type: "reference";
+    _weak?: boolean;
+    _key: string;
+    [internalGroqTypeReferenceTo]?: "category";
+  }>;
+  stock?: number;
+  label?: string;
+  status?: "hot" | "new" | "sale";
+}>;
 
 // Query TypeMap
 import "@sanity/client";
@@ -276,5 +358,8 @@ declare module "@sanity/client" {
   interface SanityQueries {
     "*[_type == 'sale'] | order(name asc)": SALE_QUERYResult;
     "*[_type == 'product'] | order(name asc)": PRODUCTS_QUERYResult;
+    "*[_type == 'category'] | order(name asc)": CATEGORIES_QUERYResult;
+    "*[_type == 'product' && slug.current == $slug] | order(name asc)[0]": PRODUCT_BY_SLUGResult;
+    "*[_type == 'product' && name match $searchParams] | order(name asc)": PRODUCT_SEARCH_QUERYResult;
   }
 }

@@ -1,5 +1,5 @@
 import { sanityFetch } from '../lib/live'
-import { CATEGORIES_QUERY, PRODUCTS_QUERY, SALE_QUERY } from './queries'
+import { CATEGORIES_QUERY, PRODUCT_BY_CATEGORY_QUERY, PRODUCT_BY_SLUG, PRODUCT_SEARCH_QUERY, PRODUCTS_QUERY, SALE_QUERY } from './queries'
 
 export const getSale = async () => {
 	try {
@@ -33,6 +33,52 @@ export const getAllCategories = async () => {
 		return categories.data || []
 	} catch (error) {
 		console.error("All categories fetching Error:", error)
+		return []
+	}
+}
+
+export const getProductBySlug = async (slug:string) => {
+	try {
+		const product = await sanityFetch({
+			query: PRODUCT_BY_SLUG,
+			params: {
+				slug
+			}
+		})	
+
+		return product?.data || null
+	} catch (error) {
+		console.error("All categories fetching Error", error)
+		return null
+	}
+}
+
+export const searchProductsByName = async (searchParams: string) => {
+	try {
+		const products = await sanityFetch({
+			query: PRODUCT_SEARCH_QUERY,
+			params: {
+				searchParams: searchParams
+			}
+		})
+		return products?.data || []
+	} catch (error) {
+		console.error("Fetching product by name Error:", error)
+		return []
+	}
+}
+
+export const getProductsByCategory = async (categorySlug: string) => {
+	try {
+		const products = await sanityFetch({
+			query: PRODUCT_BY_CATEGORY_QUERY,
+			params: {
+				categorySlug
+			}
+		})
+		return products?.data || []
+	} catch (error) {
+		console.error("Fetching product by category Error:", error)
 		return []
 	}
 }
