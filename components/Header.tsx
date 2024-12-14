@@ -7,9 +7,15 @@ import Image from "next/image";
 import Link from "next/link";
 import CartIcon from "./CartIcon";
 import Container from "./Container";
+import { getMyOrders } from "@/sanity/helpers";
 
 const Header = async () => {
   const user = await currentUser();
+  let orders = null;
+  if (user?.id) {
+    orders = await getMyOrders(user?.id);
+  }
+  console.log("Orders", orders?.length);
   return (
     <header className="sticky top-0 z-50 w-full border-b border-b-gray-400 bg-white py-4">
       <Container className="flex flex-col items-center justify-between gap-5 md:flex-row">
@@ -35,7 +41,10 @@ const Header = async () => {
                 <ShoppingBasket className="size-6 text-darkBlue" />
                 <div className="flex flex-col">
                   <p className="text-xs">
-                    <span className="font-semibold">0</span> items
+                    <span className="font-semibold">
+                      {orders && orders?.length > 0 ? orders?.length : 0}
+                    </span>{" "}
+                    items
                   </p>
                   <p className="font-semibold">Orders</p>
                 </div>

@@ -1,6 +1,11 @@
 "use client";
 
+import {
+  createCheckoutSession,
+  Metadata,
+} from "@/actions/createCheckoutSession";
 import Container from "@/components/Container";
+import EmptyCart from "@/components/EmptyCart";
 import Loader from "@/components/Loader";
 import NoAccessToCart from "@/components/NoAccessToCart";
 import PriceFormatter from "@/components/PriceFormatter";
@@ -11,6 +16,7 @@ import { urlFor } from "@/sanity/lib/image";
 import userCartStore from "@/store";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { Divide, ShoppingBag, Trash2 } from "lucide-react";
+
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -42,9 +48,35 @@ const CartPage = () => {
     toast.success("Product deleted successfully!");
   };
 
-  const handleCheckout = async () => {
-    toast.success("Checkout will apply soon");
+  const handleResetCart = () => {
+    const confirmed = window.confirm("Are you sure to reset your Cart?");
+    if (confirmed) {
+      resetCart();
+      toast.success("Your cart reset successfully!");
+    }
   };
+
+  const handleCheckout = async () => {
+    setLoading(true);
+    try {
+      const metadata: Metadata = {
+        orderNumber: crypto.randomUUID(),
+        customerName: user?.fullName ?? "Unknown",
+        customerEmail: user?.emailAddresses[0]?.emailAddress ?? "Unknown",
+        clerkUserId: user!?.id,
+      };
+      const checkoutUrl = await createCheckoutSession(groupedItems, metadata);
+      if (checkoutUrl) {
+        console.log("checkoutUrl", checkoutUrl);
+        window.location.href = checkoutUrl;
+      }
+    } catch (error) {
+      console.error("Error creating checkout session:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="bg-gray-50 pb-10">
       {isSignedIn ? (
@@ -55,7 +87,10 @@ const CartPage = () => {
                 <ShoppingBag className="size-6 text-primary" />
                 <h1 className="text-2xl font-semibold">Shopping Cart</h1>
               </div>
-              <div className="grid md:gap-8 lg:grid-cols-3">
+              <div
+                className="grid pb-40
+               md:gap-8 lg:grid-cols-3"
+              >
                 <div className="lg:col-span-1">
                   <div className="hidden w-full rounded-lg border bg-white p-6 md:inline-block">
                     <h2 className="text-xl font-semibold">Order Summary</h2>
@@ -76,8 +111,8 @@ const CartPage = () => {
                         <PriceFormatter amount={getTotalPrice()} />
                       </div>
                       <div className="flex flex-col gap-2">
-                        <Button onClick={handleCheckout}>
-                          Proceed to Checkout
+                        <Button onClick={handleCheckout} disabled={loading}>
+                          {loading ? "Processing" : "Proceed to Checkout"}
                         </Button>
                         <Link
                           href={"/"}
@@ -138,7 +173,7 @@ const CartPage = () => {
                             product={product}
                             className="gap-0 text-sm md:gap-1"
                           />
-                          <div>
+                          <div className="flex items-center">
                             <PriceFormatter
                               amount={
                                 product?.price ? product?.price * itemCount : 0
@@ -148,12 +183,19 @@ const CartPage = () => {
                         </div>
                       );
                     })}
+                    <Button
+                      onClick={handleResetCart}
+                      variant="destructive"
+                      className="m-5  font-semibold"
+                    >
+                      Reset Cart
+                    </Button>
                   </div>
                 </div>
               </div>
             </>
           ) : (
-            <div>Empty cart</div>
+            <EmptyCart />
           )}
         </Container>
       ) : (
